@@ -1,6 +1,7 @@
 package algorithm;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
 
 public class BinaryTraversal {
     public static void main(String[] args) {
@@ -27,7 +28,13 @@ public class BinaryTraversal {
 //        LDR2(newTree);
         int depth = depth(binTree);
         System.out.println(depth);
-        
+        System.out.println("下面测试根据前序中序构建二叉树");
+        int[] dlr = {3, 9, 20, 15, 7};
+        int[] ldr = {9, 3, 15, 20, 7};
+        BinTree tree = reconstruct(dlr, ldr);
+        DLR(tree);
+        System.out.println("=============");
+        LDR(tree);
     }
 
     //层次遍历
@@ -148,6 +155,40 @@ public class BinaryTraversal {
                     depth(tree.left) : depth(tree.right)) + 1;
         }
     }
+
+    //根据二叉树的前序和中序构建二叉树
+    //由于indexDlr用一次就要加一，将其设为静态
+    public static int indexDlr = 0;
+    public static BinTree reconstruct(int[] dlr, int[] ldr) {
+        HashMap<Integer, Integer> indexForLdrOrders = new HashMap<>();
+        for (int i = 0; i < ldr.length; i++) {
+            //将中序遍历的结果存储到map，等下可以直接找到位置
+            indexForLdrOrders.put(ldr[i], i);
+        }
+        return reconstructBinTree(dlr, 0, dlr.length - 1, indexForLdrOrders);
+    }
+    public static BinTree reconstructBinTree(int[] dlr, int ldrL, int ldrR,
+                                             HashMap<Integer, Integer> indexForLdrOrders) {
+        if (ldrL > ldrR) {
+            //根节点没分出左右两部分，说明出现了null节点
+            return null;
+        }
+        //将下面的代码抽取
+//        HashMap<Integer, Integer> indexForLdrOrders = new HashMap<>();
+//        for (int i = 0; i < ldr.length; i++) {
+//            //将中序遍历的结果存储到map，等下可以直接找到位置
+//            indexForLdrOrders.put(ldr[i], i);
+//        }
+        BinTree tree = new BinTree();
+        //前序遍历开头必定是根节点
+        tree.data = dlr[indexDlr++];
+        //中序遍历中这个根节点恰好将他们分成两半
+        tree.left = reconstructBinTree(dlr, ldrL, indexForLdrOrders.get(tree.data) - 1,
+                indexForLdrOrders);
+        tree.right = reconstructBinTree(dlr, indexForLdrOrders.get(tree.data) + 1, ldrR,
+                indexForLdrOrders);
+        return tree;
+    }
 }
 
 class BinTree {
@@ -162,6 +203,7 @@ class BinTree {
     }
 
     //下面是为了实现复制算法添加的代码
+    //还有根据二叉树的前序和中序构建二叉树
     public BinTree() {
     }
 }
